@@ -1,0 +1,94 @@
+#define right 22 // the Arduino pin, which connects to the IN1 pin of relay module
+#define left 24 // the Arduino pin, which connects to the IN2 pin of relay module
+
+const int stepPin = 3;
+const int dirPin = 2;
+
+// Motor specifications
+const int stepsPerRevolution = 250; // Steps per revolution for your motor
+
+// Variable for speed control
+int rpm = 25; // Default speed in RPM (can be updated dynamically)
+
+// Function to calculate step delay
+unsigned int calculateStepDelay(int rpm) {
+  return (60 * 1000000) / (rpm * stepsPerRevolution);
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  // initialize digital pin as an output.
+  pinMode(left, OUTPUT);
+  pinMode(right, OUTPUT);
+  pinMode(stepPin, OUTPUT);
+  pinMode(dirPin, OUTPUT);
+
+  Serial.println("Serial Working"); // Test to check if serial is working or not
+  Serial.println("Stepper Motor Speed Control");
+  Serial.println("Set RPM dynamically using the 'rpm' variable.");
+}
+
+// the loop function runs over and over again forever
+void loop() {
+  delay(5000); // Delay for 5 seconds before starting
+  
+  // Calculate step delay based on RPM
+  unsigned int stepDelay = calculateStepDelay(rpm);
+
+  // Rotate clockwise and stay in position - acceleration
+  Serial.print("Rotating clockwise at ");
+  Serial.print(rpm);
+  Serial.println(" RPM...");
+  digitalWrite(dirPin, HIGH);
+  for (int i = 0; i < stepsPerRevolution; i++) {
+    digitalWrite(stepPin, HIGH);
+    delayMicroseconds(stepDelay / 2);
+    digitalWrite(stepPin, LOW);
+    delayMicroseconds(stepDelay / 2);
+  }
+
+  Serial.println("Holding position");
+  //delay(3000); // Pause while motor is held in position
+
+  // Activate steering while motor is held
+  //delay(10000);
+  
+  Serial.println("turn right");
+  digitalWrite(left, LOW);
+  digitalWrite(right, HIGH);
+
+  delay(10000);
+  Serial.println("Switch both left and right to high");
+  // Switching both output to high ends the turning motion
+  digitalWrite(left, HIGH);
+  digitalWrite(right, HIGH);
+  delay(1000);
+
+
+
+Serial.println("turn left");
+  digitalWrite(left, HIGH);
+  digitalWrite(right, LOW);
+
+  delay(10000);
+  Serial.println("Switch both left and right to high");
+  // Switching both high ends the turning motion
+  digitalWrite(left, HIGH);
+  digitalWrite(right, HIGH);
+  delay(1000);
+
+
+  // Rotate counterclockwise after steering - deacceleration
+  Serial.print("Rotating counterclockwise at ");
+  Serial.print(rpm);
+  Serial.println(" RPM...");
+  digitalWrite(dirPin, LOW);
+  for (int i = 0; i < stepsPerRevolution; i++) {
+    digitalWrite(stepPin, HIGH);
+    delayMicroseconds(stepDelay / 2);
+    digitalWrite(stepPin, LOW);
+    delayMicroseconds(stepDelay / 2);
+  }
+  delay(5000); // Pause for 5 seconds after counterclockwise rotation 
+}
